@@ -1,0 +1,206 @@
+syntax = "proto3";
+
+import "com/actions/protobuf/common/request/header.proto";
+import "com/actions/protobuf/common/response/header.proto";
+
+//below property is skipped for languages other than java
+option java_multiple_files = true;
+option java_package = "com.actions.microservices.grpc.campaignform";
+option java_outer_classname = "CampaignFormProto";
+
+package com.actions.protobuf.campaignform;
+
+//Campaign service definition
+service CampaignService {
+    //get Campaign for given name
+    rpc GetCampaignByName (CampaignRequest) returns (CampaignResponse) {}
+    //get Campaign for given opaque string
+    rpc GetCampaignByOpaqueString (CampaignRequest) returns (CampaignResponse) {}
+    //get Default Campaign for given domain
+    rpc GetDefaultCampaignByDomain (CampaignRequest) returns (CampaignResponse) {}
+}
+
+//Creative service definition
+service CreativeService {
+    //get Creative for given name
+    rpc GetCreativeByName (CreativeRequest) returns (CreativeResponse) {}
+}
+
+//RequestParam service definition
+service RequestParamService {
+    //get RequestParams for given param names and values
+    rpc GetExpandedParams (ParamRequest) returns (ParamResponse) {}
+}
+
+message CampaignRequest {
+ 	string campaignKey = 1;
+ 	com.actions.protobuf.common.request.RequestHeader request_header = 2;
+}
+
+message CampaignResponse {
+ 	AdcCampaign adcCampaign = 1;
+ 	com.actions.protobuf.common.response.ResponseHeader response_header = 2;
+}
+
+message CreativeRequest {
+ 	string creativeKey = 1;
+ 	com.actions.protobuf.common.request.RequestHeader request_header = 2;
+}
+
+message CreativeResponse {
+ 	AdcCreative adcCreative = 1;
+ 	com.actions.protobuf.common.response.ResponseHeader response_header = 2;
+}
+
+message AdcCampaign {
+
+    string name = 1;
+    string alpsPageGroupName = 2;
+    string opaqueStr = 3;
+    string domain = 4;
+    string alpsAccount = 5;
+    string xsellDisplayType = 6;
+    
+    enum CampaignType {
+        DOE = 0;
+        ROTATION = 1;
+        RTOP = 2;
+        ATOP = 3;
+    }
+    
+    CampaignType type = 7;
+    repeated string creatives = 8;
+    map<string,bool> creativeHash = 9;
+    AdcDimensionGroup allDimGroup = 10;
+    AdcDimensionGroup channelDimGroup = 11;
+    AdcDimensionGroup trackingDimGroup = 12;
+    AdcDimensionGroup optimizationDimGroup = 13;
+    repeated string crossSellCampaigns = 14;
+    repeated string crossSellFamilies = 15;
+    
+    map<string,AdcAllocation> allocations = 16;
+    map<string,AdcAllocation> constraintAllocations = 17;
+    
+    repeated string cellDimensions = 18;
+    repeated string constraintDimensions = 19;
+    
+    int32 lastCreative = 20;
+    int64 lastStageUpdateTime = 21;
+    int64 lastCampaignUpdateTime = 22;
+    
+    string biChannelName = 23;
+    string biVerticalName = 24;
+    
+    bool showExitSurvey = 25;
+    bool ctcHideCrossSell = 26;
+    bool showCTC = 27;
+    
+    com.actions.protobuf.common.response.ResponseHeader response_header = 28;
+}
+
+message AdcDimensionGroup {
+	string name = 1;
+	repeated AdcDimension dimensions = 2;
+}
+
+message AdcDimension {
+	string name = 1;
+	string urlParamName = 2;
+	string xmlAttributeName = 3;
+	string childName = 4;
+	repeated string strValues = 5;
+	
+	int32 maxLength = 6;
+	
+	enum DataType {
+        _int = 0;
+        _real = 1;
+        _str = 2;
+        _tod = 3;
+        _dow = 4;
+        _os = 5;
+        _browser = 6;
+        _referer = 7;
+        _hosturl = 8;
+        _group = 9;
+    }
+    
+   	enum BucketType {
+        discrete = 0;
+        range = 1;
+        continuous = 2;
+    }
+    
+    enum DimensionSource {
+        param = 0;
+        sys = 1; 
+    }
+	
+	DataType dataType = 7;
+	BucketType bucketType = 8;
+	DimensionSource dimensionSource = 9;
+	map<string,string> subGroups = 10;
+	map<string,string> bucketHash = 11;
+	
+	repeated int32 intValuesRangeEnd = 12;
+	repeated int32 intValuesRangeStart = 13;
+	repeated double realValuesRangeEnd = 14;
+	repeated double realValuesRangeStart = 15;
+}
+
+message AdcAllocation {
+	int32 lastCreative = 1;
+	repeated string creatives = 2;
+}
+
+message AdcCreative {
+	string name = 1;
+	string fileDir = 2;
+	AdcCreativeForm creativeForm = 3;
+	int32 numberOfPages = 4;
+	string family = 5;
+	bool isCreativePartOfSequence = 6;
+}
+
+message AdcCreativeForm {
+	string _creativeName = 1;
+    string _multiFormHandler = 2;
+    int32 _numberOfPages = 3;
+    int32 pageNeedsAddressValidation = 4;
+    string _family = 5;
+    bool flexibleForm = 6;
+    map<string,AdcCreativeFormField> creativeFieldHash = 7;
+    repeated ListOfAdcAction actions = 8;
+    repeated ListOfAdcCreativeFormField creativeFields = 9;
+}
+
+message AdcCreativeFormField {
+	string name = 1;
+    string value = 2;
+    string fieldType = 3;
+    string typeCode = 4;
+    int32 checkBoxCount = 5;
+    bool isPrivate = 6;
+}
+
+message AdcAction {
+	string name = 1;
+}
+
+message ListOfAdcAction {
+    repeated AdcAction adcAction=1;
+}
+
+message ListOfAdcCreativeFormField {
+    repeated AdcCreativeFormField adcCreativeFormField=1;
+}
+
+message ParamRequest {
+ 	map<string,string> params = 1;
+ 	com.actions.protobuf.common.request.RequestHeader request_header = 2;
+}
+
+message ParamResponse {
+ 	map<string,string> expandedParamsMap = 1;
+ 	com.actions.protobuf.common.response.ResponseHeader response_header = 2;
+}
